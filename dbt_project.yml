@@ -1,4 +1,4 @@
-name: "bde_lab_6"
+name: "bde_at_3"
 version: "1.0.0"
 config-version: 2
 
@@ -17,7 +17,7 @@ clean-targets: # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 models:
-  bde_lab_6:
+  bde_at_3:
     bronze:
       +materialized: table
       +schema: bronze
@@ -32,5 +32,5 @@ models:
         +materialized: view
         +schema: gold
 snapshots:
-  bde_lab_6:
+  bde_at_3:
     +schema: silver
