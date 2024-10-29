@@ -10,6 +10,5 @@ select
     host_id,
     host_name,
     host_since,
-    host_is_superhost,
-    host_neighbourhood
+    host_is_superhost
 from {{ source('raw', 'raw_listing') }}

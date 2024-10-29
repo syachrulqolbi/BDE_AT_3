@@ -13,7 +13,6 @@ with filtered as (
     select
         to_timestamp(scraped_date, 'yy/mm/dd')::timestamptz as scraped_date,
         listing_id::int,
-        NULLIF(listing_neighbourhood, 'NaN')::varchar as listing_neighbourhood,
         NULLIF(property_type, 'NaN')::varchar as property_type,
         NULLIF(room_type, 'NaN')::varchar as room_type,
         NULLIF(accommodates, 'NaN')::int as accommodates,
@@ -24,7 +23,6 @@ with filtered as (
 select 
     scraped_date,
     listing_id,
-    listing_neighbourhood,
     property_type,
     room_type,
     accommodates

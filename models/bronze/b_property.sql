@@ -8,7 +8,6 @@
 select 
     listing_id,
     scraped_date,
-    listing_neighbourhood,
     property_type,
     room_type,
     accommodates
