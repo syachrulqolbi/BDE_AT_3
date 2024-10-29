@@ -10,7 +10,7 @@ with
 source  as (
 
     select 
-        lga_code_2016::varchar,
+        (REGEXP_MATCHES(lga_code_2016, '[0-9]+'))[1]::varchar as lga_code_2016,
         NULLIF(median_age_persons, 'NaN')::int as median_age_persons,
         NULLIF(median_mortgage_repay_monthly, 'NaN')::int as median_mortgage_repay_monthly,
         NULLIF(median_tot_prsnl_inc_weekly, 'NaN')::int as median_tot_prsnl_inc_weekly,

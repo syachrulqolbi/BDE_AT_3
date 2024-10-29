@@ -10,7 +10,7 @@ with
 source as (
 
     select 
-        lga_code_2016,
+        (REGEXP_MATCHES(lga_code_2016, '[0-9]+'))[1]::varchar as lga_code_2016,
         NULLIF(tot_p_m, 'NaN')::int as tot_p_m,
         NULLIF(tot_p_f, 'NaN')::int as tot_p_f,
         NULLIF(tot_p_p, 'NaN')::int as tot_p_p,
