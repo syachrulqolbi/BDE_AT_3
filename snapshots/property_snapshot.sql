@@ -11,7 +11,7 @@
 
 with filtered as (
     select
-        to_timestamp(scraped_date, 'yy/mm/dd') as scraped_date,
+        to_timestamp(scraped_date, 'yy/mm/dd')::timestamptz as scraped_date,
         listing_id::int,
         NULLIF(listing_neighbourhood, 'NaN')::varchar as listing_neighbourhood,
         NULLIF(property_type, 'NaN')::varchar as property_type,

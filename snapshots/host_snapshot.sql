@@ -11,7 +11,7 @@
 
 with filtered as (
     select
-        to_timestamp(scraped_date, 'yy/mm/dd') as scraped_date,
+        to_timestamp(scraped_date, 'yy/mm/dd')::timestamptz as scraped_date,
         host_id::int,
         NULLIF(host_name, 'NaN')::varchar as host_name,
         to_timestamp(NULLIF(host_since, 'NaN'), 'dd/mm/yy') as host_since,
