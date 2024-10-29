@@ -1,7 +1,7 @@
 {{
     config(
         unique_key='suburb_name',
-        alias='suburb'
+        alias='dim_suburb'
     )
 }}
 

@@ -16,9 +16,9 @@ source  as (
         NULLIF(median_tot_prsnl_inc_weekly, 'NaN')::int as median_tot_prsnl_inc_weekly,
         NULLIF(median_rent_weekly, 'NaN')::int as median_rent_weekly,
         NULLIF(median_tot_fam_inc_weekly, 'NaN')::int as median_tot_fam_inc_weekly,
-        NULLIF(average_num_psns_per_bedroom, 'NaN')::decimal as average_num_psns_per_bedroom,
+        NULLIF(average_num_psns_per_bedroom, 'NaN')::decimal(10, 2) as average_num_psns_per_bedroom,
         NULLIF(median_tot_hhd_inc_weekly, 'NaN')::int as median_tot_hhd_inc_weekly,
-        NULLIF(average_household_size, 'NaN')::decimal as average_household_size
+        NULLIF(average_household_size, 'NaN')::decimal(10, 2) as average_household_size
     from {{ ref('b_census_g02') }}
 
 ),
