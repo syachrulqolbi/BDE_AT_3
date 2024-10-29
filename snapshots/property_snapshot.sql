@@ -5,8 +5,7 @@
         strategy='timestamp',
         unique_key='listing_id',
         updated_at='scraped_date',
-        alias='property',
-        check_cols=['listing_neighbourhood', 'property_type', 'room_type', 'accommodates']
+        alias='property'
     )
 }}
 
