@@ -6,7 +6,8 @@
 
 with neighbourhood_lga_map as (
     select 
-        n.listing_neighbourhood as host_neighbourhood,
+        n.listing_id,
+        n.listing_neighbourhood as listing_neighbourhood,
         l.lga_name as host_neighbourhood_lga
     from 
         {{ ref('g_dim_neighbourhood') }} as n
@@ -22,7 +23,7 @@ listing_data as (
         p.property_type,
         p.room_type,
         p.accommodates,
-        date_trunc('month', l.scraped_date) as month_year,
+        date_trunc('month', l.scraped_date::date) as month_year,
         
         -- active listings and rates
         count(*) filter (where l.has_availability = 't') as active_listings,
@@ -51,7 +52,7 @@ listing_data as (
         {{ ref('g_dim_host') }} as h on l.host_id = h.host_id
         and h.valid_to is null  -- Ensure active records in g_dim_host
     left join 
-        neighbourhood_lga_map as n_lga on h.host_neighbourhood = n_lga.host_neighbourhood
+        neighbourhood_lga_map as n_lga on l.listing_id = n_lga.listing_id
 
     group by 
         n_lga.host_neighbourhood_lga, 

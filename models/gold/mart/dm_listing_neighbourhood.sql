@@ -1,72 +1,64 @@
-select 
+SELECT 
     dn.listing_neighbourhood,
-    date_trunc('month', fl.scraped_date) as month_year,
+    DATE_TRUNC('month', fl.scraped_date) AS month_year,
     
-    -- Metrics for Active Listings
-    case 
-        when count(distinct fl.listing_id) = 0 then 0
-        else count(distinct case when fl.has_availability = 't' then fl.listing_id end) * 100.0 / count(distinct fl.listing_id)
-    end as active_listing_rate,
-    min(case when fl.has_availability = 't' then fl.price end) as min_price_active,
-    max(case when fl.has_availability = 't' then fl.price end) as max_price_active,
-    percentile_cont(0.5) within group (order by case when fl.has_availability = 't' then fl.price end) as median_price_active,
-    cast(avg(case when fl.has_availability = 't' then fl.price end) as decimal(10, 2)) as avg_price_active,
+    -- Active Listings Rate
+    CASE 
+        WHEN COUNT(DISTINCT fl.listing_id) = 0 THEN 0
+        ELSE COUNT(DISTINCT CASE WHEN fl.has_availability = 't' THEN fl.listing_id END) * 100.0 / COUNT(DISTINCT fl.listing_id)
+    END AS active_listing_rate,
     
-    -- Superhost Rate
-    cast(
-        case 
-            when count(distinct dh.host_id) = 0 then 0
-            else count(distinct case when dh.host_is_superhost = 't' then dh.host_id end) * 100.0 / count(distinct dh.host_id)
-        end 
-        as decimal(10, 2)
-    ) as superhost_rate,
+    -- Pricing for Active Listings
+    MIN(CASE WHEN fl.has_availability = 't' THEN fl.price END) AS min_price_active,
+    MAX(CASE WHEN fl.has_availability = 't' THEN fl.price END) AS max_price_active,
+    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY CASE WHEN fl.has_availability = 't' THEN fl.price END) AS median_price_active,
+    CAST(AVG(CASE WHEN fl.has_availability = 't' THEN fl.price END) AS DECIMAL(10, 2)) AS avg_price_active,
     
-    -- Average Review Score Rating for Active Listings
-    cast(avg(case when fl.has_availability = 't' then fl.review_scores_rating end) as decimal(10, 2)) as avg_review_scores_rating,
+    -- Superhost Rate Calculation
+    CAST(
+        CASE 
+            WHEN COUNT(DISTINCT dh.host_id) = 0 THEN 0
+            ELSE COUNT(DISTINCT CASE WHEN dh.host_is_superhost = 't' THEN dh.host_id END) * 100.0 / COUNT(DISTINCT dh.host_id)
+        END AS DECIMAL(10, 2)
+    ) AS superhost_rate,
     
-    -- Percentage Change Calculations (Month-over-Month)
-    cast(
-        case 
-            when lag(count(distinct case when fl.has_availability = 't' then fl.listing_id end)) over (partition by dn.listing_neighbourhood order by date_trunc('month', fl.scraped_date)) = 0 then 0
-            else (count(distinct case when fl.has_availability = 't' then fl.listing_id end) - 
-                  lag(count(distinct case when fl.has_availability = 't' then fl.listing_id end)) over (partition by dn.listing_neighbourhood order by date_trunc('month', fl.scraped_date))
-                 ) * 100.0 / lag(count(distinct case when fl.has_availability = 't' then fl.listing_id end)) over (partition by dn.listing_neighbourhood order by date_trunc('month', fl.scraped_date))
-        end as decimal(10, 2)
-    ) as pct_change_active_listings,
+    -- Average Review Score for Active Listings
+    CAST(AVG(CASE WHEN fl.has_availability = 't' THEN fl.review_scores_rating END) AS DECIMAL(10, 2)) AS avg_review_scores_rating,
     
-    cast(
-        case 
-            when lag(count(distinct case when fl.has_availability = 'f' then fl.listing_id end)) over (partition by dn.listing_neighbourhood order by date_trunc('month', fl.scraped_date)) = 0 then 0
-            else (count(distinct case when fl.has_availability = 'f' then fl.listing_id end) - 
-                  lag(count(distinct case when fl.has_availability = 'f' then fl.listing_id end)) over (partition by dn.listing_neighbourhood order by date_trunc('month', fl.scraped_date))
-                 ) * 100.0 / lag(count(distinct case when fl.has_availability = 'f' then fl.listing_id end)) over (partition by dn.listing_neighbourhood order by date_trunc('month', fl.scraped_date))
-        end as decimal(10, 2)
-    ) as pct_change_inactive_listings,
+    -- Percentage Change in Active Listings
+    CAST(
+        CASE 
+            WHEN LAG(COUNT(DISTINCT CASE WHEN fl.has_availability = 't' THEN fl.listing_id END)) OVER (PARTITION BY dn.listing_neighbourhood ORDER BY DATE_TRUNC('month', fl.scraped_date)) = 0 THEN 0
+            ELSE (COUNT(DISTINCT CASE WHEN fl.has_availability = 't' THEN fl.listing_id END) - 
+                  LAG(COUNT(DISTINCT CASE WHEN fl.has_availability = 't' THEN fl.listing_id END)) OVER (PARTITION BY dn.listing_neighbourhood ORDER BY DATE_TRUNC('month', fl.scraped_date))
+                 ) * 100.0 / LAG(COUNT(DISTINCT CASE WHEN fl.has_availability = 't' THEN fl.listing_id END)) OVER (PARTITION BY dn.listing_neighbourhood ORDER BY DATE_TRUNC('month', fl.scraped_date))
+        END AS DECIMAL(10, 2)
+    ) AS pct_change_active_listings,
     
-    -- Total Number of Stays and Estimated Revenue for Active Listings
-    sum(case when fl.has_availability = 't' then (30 - fl.availability_30) end) as total_stays,
-    avg(case when fl.has_availability = 't' then cast((30 - fl.availability_30) * fl.price as decimal(10, 2)) end) as avg_estimated_revenue_active,
+    -- Total Stays and Revenue for Active Listings
+    SUM(CASE WHEN fl.has_availability = 't' THEN (30 - fl.availability_30) END) AS total_stays,
+    AVG(CASE WHEN fl.has_availability = 't' THEN CAST((30 - fl.availability_30) * fl.price AS DECIMAL(10, 2)) END) AS avg_estimated_revenue_active,
     
-    -- Estimated Revenue per Host
-    cast(
-        case 
-            when count(distinct dh.host_id) = 0 then 0
-            else avg((30 - fl.availability_30) * fl.price) / count(distinct dh.host_id)
-        end as decimal(10, 2)
-    ) as avg_estimated_revenue_per_host
+    -- Revenue per Host Calculation
+    CAST(
+        CASE 
+            WHEN COUNT(DISTINCT dh.host_id) = 0 THEN 0
+            ELSE AVG((30 - fl.availability_30) * fl.price) / COUNT(DISTINCT dh.host_id)
+        END AS DECIMAL(10, 2)
+    ) AS avg_estimated_revenue_per_host
     
-from 
+FROM 
     {{ ref('g_fact_listing') }} fl
-join 
-    {{ ref('g_dim_neighbourhood') }} dn on fl.listing_id = dn.listing_id
-    and dn.valid_to is null  -- Ensure we join on active records in the g_dim_neighbourhood table
-left join 
-    {{ ref('g_dim_host') }} dh on fl.host_id = dh.host_id
-    and dh.valid_to is null  -- Ensure we join on active records in the g_dim_host table
+JOIN 
+    {{ ref('g_dim_neighbourhood') }} dn ON fl.listing_id = dn.listing_id
+    AND dn.valid_to IS NULL
+LEFT JOIN 
+    {{ ref('g_dim_host') }} dh ON fl.host_id = dh.host_id
+    AND dh.valid_to IS NULL
 
-group by 
+GROUP BY 
     dn.listing_neighbourhood,
-    date_trunc('month', fl.scraped_date)
-order by 
+    DATE_TRUNC('month', fl.scraped_date)
+ORDER BY 
     dn.listing_neighbourhood,
     month_year
