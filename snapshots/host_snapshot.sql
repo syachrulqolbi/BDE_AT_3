@@ -5,7 +5,8 @@
         strategy='timestamp',
         unique_key='host_id',
         updated_at='scraped_date',
-        alias='host'
+        alias='host',
+        check_cols=['host_name', 'host_since', 'host_is_superhost', 'host_neighbourhood']
     )
 }}
 
