@@ -19,31 +19,31 @@ select
     min(case when l.has_availability = 't' then l.price end) as min_price,
     max(case when l.has_availability = 't' then l.price end) as max_price,
     percentile_cont(0.5) within group (order by case when l.has_availability = 't' then l.price end) as median_price,
-    avg(case when l.has_availability = 't' then l.price end) as avg_price,
+    lower(cast(avg(case when l.has_availability = 't' then l.price end) as decimal(10, 2))::text) as avg_price,
     
     -- distinct hosts and superhost rate
     count(distinct h.host_id) as distinct_hosts,
-    (count(distinct case when h.host_is_superhost = 't' then h.host_id end) * 100.0 / nullif(count(distinct h.host_id), 0)) as superhost_rate,
+    lower(cast((count(distinct case when h.host_is_superhost = 't' then h.host_id end) * 100.0 / nullif(count(distinct h.host_id), 0)) as decimal(10, 2))::text) as superhost_rate,
 
     -- average review score for active listings
-    avg(case when l.has_availability = 't' then l.review_scores_rating end) as avg_review_score,
+    lower(cast(avg(case when l.has_availability = 't' then l.review_scores_rating end) as decimal(10, 2))::text) as avg_review_score,
     
     -- monthly percentage change for active and inactive listings
-    (count(case when l.has_availability = 't' then l.listing_id end) - 
+    lower(cast(((count(case when l.has_availability = 't' then l.listing_id end) - 
      lag(count(case when l.has_availability = 't' then l.listing_id end)) over (partition by p.property_type, p.room_type, p.accommodates order by date_trunc('month', l.scraped_date))) * 100.0 / 
-     nullif(lag(count(case when l.has_availability = 't' then l.listing_id end)) over (partition by p.property_type, p.room_type, p.accommodates order by date_trunc('month', l.scraped_date)), 0) 
+     nullif(lag(count(case when l.has_availability = 't' then l.listing_id end)) over (partition by p.property_type, p.room_type, p.accommodates order by date_trunc('month', l.scraped_date)), 0)) as decimal(10, 2))::text) 
     as pct_change_active_listings,
 
-    (count(case when l.has_availability = 'f' then l.listing_id end) - 
+    lower(cast(((count(case when l.has_availability = 'f' then l.listing_id end) - 
      lag(count(case when l.has_availability = 'f' then l.listing_id end)) over (partition by p.property_type, p.room_type, p.accommodates order by date_trunc('month', l.scraped_date))) * 100.0 / 
-     nullif(lag(count(case when l.has_availability = 'f' then l.listing_id end)) over (partition by p.property_type, p.room_type, p.accommodates order by date_trunc('month', l.scraped_date)), 0) 
+     nullif(lag(count(case when l.has_availability = 'f' then l.listing_id end)) over (partition by p.property_type, p.room_type, p.accommodates order by date_trunc('month', l.scraped_date)), 0)) as decimal(10, 2))::text) 
     as pct_change_inactive_listings,
 
     -- number of stays (for active listings)
     sum(case when l.has_availability = 't' then 30 - l.availability_30 end) as num_stays,
 
     -- estimated revenue per active listing
-    sum(case when l.has_availability = 't' then (30 - l.availability_30) * l.price end) / nullif(count(distinct h.host_id), 0) as avg_estimated_revenue_per_host
+    lower(cast((sum(case when l.has_availability = 't' then (30 - l.availability_30) * l.price end) / nullif(count(distinct h.host_id), 0)) as decimal(10, 2))::text) as avg_estimated_revenue_per_host
 from 
     {{ ref('g_fact_listing') }} as l
 join 

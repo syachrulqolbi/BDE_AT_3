@@ -19,12 +19,14 @@ select
         end) as estimated_revenue,
 
     -- calculate estimated revenue per host (distinct)
-    case when count(distinct fl.host_id) > 0 then
-        sum(case 
-                when fl.has_availability = 't' then (30 - fl.availability_30) * fl.price
-                else 0
-            end) / count(distinct fl.host_id)
-    else 0 end as estimated_revenue_per_host,
+    case 
+        when count(distinct fl.host_id) > 0 then
+            cast(sum(case 
+                        when fl.has_availability = 't' then (30 - fl.availability_30) * fl.price
+                        else 0
+                    end) / count(distinct fl.host_id) as decimal(10, 2))
+        else 0 
+    end as estimated_revenue_per_host,
 
     -- calculate active listing rate
     (count(case when fl.has_availability = 't' then 1 end) / count(fl.listing_id)) * 100 as active_listing_rate,
