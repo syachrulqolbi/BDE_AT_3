@@ -9,7 +9,9 @@ with
 
 source  as (
 
-    select * from {{ ref('property_snapshot') }}
+    select * 
+    from {{ ref('property_snapshot') }}
+    where dbt_valid_to is null  -- filter to only keep the latest records
 
 ),
 
