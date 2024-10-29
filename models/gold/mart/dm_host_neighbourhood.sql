@@ -37,7 +37,9 @@ select
 from 
     {{ ref('g_fact_listing') }} fl
     join {{ ref('g_dim_host') }} dh on fl.host_id = dh.host_id
+        and dh.valid_to is null  -- Ensure we join on active records in the g_dim_host table
     join {{ ref('g_dim_neighbourhood') }} ln on dh.host_neighbourhood = ln.listing_neighbourhood
+        and ln.valid_to is null  -- Ensure we join on active records in the g_dim_neighbourhood table
 
 where 
     fl.scraped_date is not null

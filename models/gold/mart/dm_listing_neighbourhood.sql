@@ -59,8 +59,10 @@ from
     {{ ref('g_fact_listing') }} fl
 join 
     {{ ref('g_dim_neighbourhood') }} dn on fl.listing_id = dn.listing_id
+    and dn.valid_to is null  -- Ensure we join on active records in the g_dim_neighbourhood table
 left join 
     {{ ref('g_dim_host') }} dh on fl.host_id = dh.host_id
+    and dh.valid_to is null  -- Ensure we join on active records in the g_dim_host table
 
 group by 
     dn.listing_neighbourhood,
