@@ -18,7 +18,6 @@ cleaned as (
     select
         scraped_date,
         listing_id,
-        listing_neighbourhood,
         property_type,
         room_type,
         accommodates,
@@ -31,7 +30,6 @@ unknown as (
     select
         null::timestamp as scraped_date,
         0::int as listing_id,
-        null::varchar as listing_neighbourhood,
         null::varchar as property_type,
         null::varchar as room_type,
         0::int as accommodates,
